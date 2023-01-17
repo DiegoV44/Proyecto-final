@@ -1,0 +1,820 @@
+---
+title: "Salud y Dinero"
+author: "Ricda Aranguren, Nina Asencio y Diego Vielma"
+date: "2023-01-15"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r include=FALSE}
+library(GGally)
+library(dslabs)
+library(readxl)
+library(readr)
+library(tidyverse)
+library(purrr)
+library(tidyr)
+library(dplyr)
+library(graphics)
+library(ggplot2)
+library(gapminder)
+library(readxl)
+library(tmap)
+library(gganimate)
+library(gifski)
+library(plotly)
+library(ggdark)
+library(wesanderson)
+library(transformr)
+library(car)
+library(tseries)
+library(lmtest)
+library(sandwich)
+library(broom)
+library(gridExtra)
+library(magrittr)
+library(ggthemes)
+library(gridExtra)
+library(gganimate)
+library(tibble)
+library(patchwork)
+library(hrbrthemes)
+```
+
+## Salud y Dinero ¿siempre van de la mano?
+
+### Introducción
+
+Según cifras de la OMS, el gasto en salud está creciendo más rápidamente que el resto de la economía mundial, y representa el 10% del producto interno bruto (PIB) mundial. Paralelo a esto, una familia promedio de un país desarrollado debe destinar hasta un 20% del presupuesto del hogar a la salud. Datos como estos incentivaron a estudiar más en profundidad sobre el tópico. A través de la evolución en las variables expectativa de vida y mortalidad infantil se puede echar un vistazo sobre el progreso en los sistemas de salud. La investigación va dirigida a analizar que afecta a estos indicadores, especialmente enfocada en la que (se presume a partir de los antecedentes) estrecha relación entre el dinero y la salud. Se consultaron diversas fuentes con la intención de conocer las otras variables relacionadas con las anteriormente mencionadas.
+
+La esperanza de vida como indicador permite tener una idea del estado de salud de toda una población. Resulta intuitivo pensar que el ingreso per cápita juega un papel clave en el aumento de la esperanza de vida porque se puede destinar más dinero al área de la salud, relacionándose con mejoras en la esperanza de vida, pero esto no tiene por qué ser siempre así. Preston relaciona ambas variables creando así la Curva de Preston (1975) donde establece que no existe una razón inicial para esperar una influencia directa de un ingreso per cápita elevado sobre la esperanza de vida. Asimismo, se concluye que la influencia del ingreso per cápita es indirecta, ya que "unos ingresos más altos no implica necesariamente un mayor consumo de factores que afectan a la salud, como la alimentación, la vivienda, los servicios médicos, la educación, etc" (Preston, 1975). Por otro lado, Rodriguez (2015) argumenta que en países desarrollados la mayor esperanza de vida no se ve explicada principalmente con el ingreso, ya que tienen un buen sistema de salud establecido (tanto público como privado), por lo que hábitos alimenticios, de consumo de tabaco y alcohol, entorno físico etc toman mayor relevancia. Sin embargo, los países subdesarrollados están cargados de retos a superar en sus precarios sistemas sanitarios, siendo una pequeña porción de la población los que pueden acceder a buenos servicios de salud, por ende, en estos países la renta podría ser un factor más determinante.
+
+De la mano con lo anterior, resulta coherente que si el ingreso es mayor y se destina más en salud, menor debería ser la tasa de mortalidad infantil. En las últimas dos décadas las muertes infantiles han disminuido considerablemente, lo cual ha sido posible, fundamentalmente, "gracias a los avances realizados en la prevención de enfermedades, en la mejora de la salud alimentaria y en la nutrición, así como en la mejora de los servicios de los sistemas de salud, influenciados en buena medida por las condiciones socioeconómicas presentes" (Perez, Bárcena y Blanco, s.f). En el caso de los países en vía de desarrollo, "donde aproximadamente el 30% de muertes ocurren en la infancia en comparación con apenas el 1% de los países desarrollados" (Cutler, 2006, citado por Perez, Bárcena y Blanco), las etapas donde el ingreso per cápita es menor, supone empeoramiento de las condiciones de vida de su población debido a que en estos países las familias se vean obligadas a recortar los gastos en alimentación y en salud. A diferencia del caso anterior, los países desarrollados no sufren tanto estas complicaciones en la salud de la población y, a su vez, en la mortalidad infantil, debido a que tienen una mayor capacidad de afrontar las dificultades ya que cuentan con un mayor acceso a servicios sanitarios ya sea privados o públicos.
+
+Interrogantes Partiendo de la información obtenida por los antecedentes, con el objetivo de canalizar la investigación se formularon las siguientes preguntas:
+
+1.  ¿Cuánto destina la población de su ingreso a gastos por salud?
+
+2.  ¿El ingreso per cápita es un buen indicador del desarrollo humano?¿Serán mejores indicadores el gasto en salud y la cantidad de camas en hospitales?
+
+3.  ¿Un mayor gasto en salud representa una mayor expectativa de vida?
+
+4.  ¿Un mayor gasto en salud representa una menor tasa de mortalidad infantil?
+
+5.  ¿La accesibilidad y la calidad del servicio sanitario es un buen indicador para explicar la esperanza de vida y la mortalidad infantil de un país?
+
+### Metodología
+
+#### Descripción de los datos
+
+Para contestar las interrogantes planteadas, el equipo de investigación acordó utilizar las siguientes variables:
+
+-   Gasto en salud per cápita: Gastos corrientes en salud per cápita en dólares estadounidenses corrientes. Las estimaciones incluyen los bienes y servicios de salud consumidos durante cada año. La fórmula de cálculo es el gasto total [incluye el gasto de todos los tipos de mecanismos de financiamiento (p. ej.programas gubernamentales, seguridad social o gasto de bolsillo) en bienes y servicios médicos,programas de salud pública y prevención, y administración del sistema de salud] entre el número de habitantes del respectivo país. Los datos se extrajeron del Banco Mundial, que a su vez utilizaron como fuente a la organización mundial de la salud.
+
+-   Ingreso per cápita: La renta per cápita, PIB/PBI per cápita o ingreso per cápita es un indicador macroeconómico de productividad y desarrollo económico, usado para entregar una visión respecto al rendimiento de las condiciones económicas y sociales de un país, esto en consideración del crecimiento real y la fuerza laboral. Para ello, se divide el Producto Interior Bruto (PIB) en términos nominales de dicho territorio entre el número de habitantes. La serie de datos se extrajo del Banco Mundial y este a su vez utilizó como primera fuente a la Organización para la Cooperación y el Desarrollo Económicos.
+
+-   Expectativa de vida: La esperanza de vida al nacer utilizada aquí es el número promedio de años que se espera que viva un recién nacido si los patrones de mortalidad en el momento de su nacimiento se mantienen constantes en el futuro. Refleja el nivel de mortalidad general de una población y resume el patrón de mortalidad que prevalece en todos los grupos de edad en un año determinado. Se calcula en una tabla de vida por períodos que proporciona una instantánea del patrón de mortalidad de una población en un momento dado. Por lo tanto, no refleja el patrón de mortalidad que una persona realmente experimenta durante su vida, que se puede calcular en una tabla de vida de cohorte. La alta mortalidad en los grupos de edad jóvenes reduce significativamente la esperanza de vida al nacer. Pero si una persona sobrevive a su infancia de alta mortalidad, puede vivir mucho más tiempo. Por ejemplo, en una población con una esperanza de vida al nacer de 50 años, puede haber pocas personas que mueran a los 50 años. La esperanza de vida al nacer puede ser baja debido a la alta mortalidad infantil, de modo que una vez que una persona sobrevive a su infancia, él / ella puede vivir mucho más de 50 años. El Banco mundial fue la fuente utilizada para la extracción
+
+-   Mortalidad infantil: Se estima por intermedio de la mortalidad de los niños menores de cinco años y mide la proporción de muertes (por cada 1.000 nacidos vivos). Da cuenta del impacto de la situación económica de las madres, su estilo de vida y características, y de la eficacia de los sistemas de salud respecto de la salud maternal y del recién nacido. Las principales fuentes de datos de mortalidad son los sistemas de registro civil y las estimaciones directas o indirectas basadas en encuestas o censos por muestreo. Un sistema de registro vital "completo", que cubra al menos el 90 por ciento de los eventos vitales de la población, es la mejor fuente de datos de mortalidad específicos por edad. Las estimaciones de mortalidad neonatal, infantil y en la niñez tienden a variar según la fuente y el método para un momento y lugar determinados. Los años para las estimaciones disponibles también varían según el país, lo que dificulta las comparaciones entre países y a lo largo del tiempo. Para que las estimaciones de mortalidad neonatal, infantil y en la niñez sean comparables y garantizar la consistencia entre las estimaciones de diferentes agencias, el Grupo Interagencial de las Naciones Unidas para la Estimación de la Mortalidad Infantil (UN IGME), que comprende el Fondo de las Naciones Unidas para la Infancia (UNICEF), el World Organización Mundial de la Salud (OMS), el Banco Mundial, la División de Población de las Naciones Unidas y otras universidades e institutos de investigación, desarrollaron y adoptaron un método estadístico que utiliza toda la información disponible para reconciliar las diferencias. El método utiliza modelos estadísticos para obtener una mejor estimación de la línea de tendencia ajustando un modelo de regresión de las tasas de mortalidad específico del país frente a sus fechas de referencia.
+
+-   Índice de Acceso a la Calidad y la Calidad de la Atención Médica (HAQ): Creado por los colaboradores del Global Burden of Diseases, Injuries, and Risk Factors Study (GBD), se basa en la mortalidad tratable, definida como las muertes que no deberían ocurrir en presencia de una atención oportuna y eficaz. Se mide en una escala de 0 (peor) a 100(mejor) basado en tasas de mortalidad por 32 causas de muerte. Estas representan una variedad de áreas de servicios de salud: enfermedades prevenibles por vacunación; enfermedades infecciosas y salud maternoinfantil; enfermedades no transmisibles, incluidos el cáncer, las enfermedades cardiovasculares y otras enfermedades no transmisibles como la diabetes; y condiciones gastrointestinales de las cuales la cirugía puede evitar fácilmente la muerte.
+
+-   Camas de hospital: Medida de los recursos disponibles para brindar servicios a pacientes internados en hospitales en términos de número de camas. Los sistemas de salud, los arreglos combinados de instituciones y acciones cuyo objetivo principal es promover, restaurar o mantener la salud (Organización Mundial de la Salud, Informe sobre la salud en el mundo 2000), son cada vez más clave para combatir las enfermedades y mejorar el estado de salud de las poblaciones. Los datos del sistema de salud también ayudan a identificar las debilidades y fortalezas y las áreas que necesitan inversión, como instalaciones de salud adicionales, mejores sistemas de información de salud o recursos humanos mejor capacitados. La disponibilidad y el uso de los servicios de salud, como camas de hospital por cada 1000 personas, reflejan factores tanto del lado de la demanda como del lado de la oferta. En ausencia de una definición consistente, este es un indicador crudo del alcance de las barreras físicas, financieras y de otro tipo para la atención de la salud".
+
+```{r}
+load("C:/Users/Diego Vielma/Downloads/PROYECTO_ARANGUREN_ASENCIO_VIELMA.R")
+```
+
+#### Metodología a utilizar
+
+Con la finalidad de poder analizar cómo se comportan las variables anteriormente mencionadas, se ha realizado una muestra en donde se seleccionaron 8 países, 4 de ellos integran un grupo de países desarrollados y los 4 adicionales conforman el grupo de los países subdesarrollados.
+
+En el proceso de selección de los países desarrollados, se escogieron a Estados Unidos, Suiza, Rusia y Reino Unido por las razones que se van a explicar a continuación. Según la data del banco mundial, Estados Unidos es la economía más grande a nivel mundial con un PIB de 19.48 billones de dólares en 2017. En el caso de Suiza, presenta uno de los índices de desarrollo humano más elevado a nivel mundial, además debido a su política de neutralidad, alberga una gran cantidad de inmigrantes, por lo tanto es uno de los países de Europa con mayor diversidad cultural. Con respecto a Rusia, se ha considerado una de las potencias mundiales más importantes e influyentes del mundo debido a su extenso territorio, su significativa producción de diversos recursos como el petróleo o trigo, y su fuerza en cuanto al ámbito militar. En relación a Reino Unido, el país se encuentra entre las primeras 10 economías a nivel mundial debido a su alto volumen neto de producción interna según el fondo monetario internacional.
+
+Para escoger a los países que formarían parte del grupo de los subdesarrollados, se investigaron varios de los mismos, debido a que en algunos casos la data disponible no era suficiente, los países utilizados en el estudio son Afganistán, Argentina, Egipto y Chile. Según la confederación internacional OXFAM international (2020): "A pesar de las significativas mejoras realizadas desde 2001, Afganistán continúa siendo uno de los países más pobres del mundo, donde casi el 40 % de la población vive por debajo del umbral de pobreza". De acuerdo con el noticiero el estadista (2020), Argentina pasó de ser un país desarrollado a uno en vías de desarrollo debido a presentar la segunda tasa de inflación más alta de América Latina y a no adaptarse a los mercados globales cambiantes, lo cual ha disminuido su crecimiento. Con respecto a Chile, un reporte del centro de investigación y docencias económicas menciona lo siguiente: "Chile ha sido una economía estable y la más desarrolladas de ALC, presenta un alto grado de desigualdad en su población y la mayor respecto al grupo OCDE (...). Se concluyó que no ha alcanzado el estándar de país desarrollo." (2022). En el caso de Egipto, los datos del Banco Mundial muestran que su PIB per cápita fue de 2.315 en 2017, esto indica que sus habitantes tienen un nivel de vida muy bajo en comparación a los países del resto del mundo.
+
+De esta manera, el propósito del trabajo de investigación es evaluar si realmente el ingreso y el gasto en salud per cápita guardan relación con la esperanza de vida y la tasa de mortalidad infantil de un país, así como con la accesibilidad y la calidad de los servicios sanitarios y las camas de hospital, estudiando porqué ocurren estos fenómenos (tanto en caso de que se dén las relaciones como en caso de que no) a través de las interrogantes planteadas anteriormente. El estudio pretende enfocarse en comparar un grupo de países desarrollados con un grupo de países que se encuentran en vías de desarrollo, en un lapso de tiempo de alrededor de 18 años para evaluar no solo relaciones sino tendencias y cambios en la misma. Asimosmo, se realizarán una serie de regresiones y análisis estadísticos para evaluar las relaciones y el nivel de explicación que tienen las variables independientes sobre las variables dependientes,
+
+### Analisis estadístico
+
+El primer paso a la hora de establecer un modelo lineal es estudiar la relación que existe entre variables. Esta información es crítica a la hora de identificar cuáles pueden ser los mejores variables explicativas para el modelo, qué variables presentan relaciones de tipo no lineal (por lo que no pueden ser incluidas) y para identificar colinialidad entre variables.
+
+En esta primera etapa, se decidió realizar una matriz para un grupo de tres paises seleccionados: en primer lugar se escogió a Estados Unidos como un país representativo del grupo de los desarrollados, Argentina como país representativo del grupo de los subdesarrollados y Afganistan debido a que, si bien entra en el grupo de los subdesarrollados, tiene una condición distinta al resto por ser considerado también un país en crisis. La matriz muestra para cada país la correlación que existe entre las variables seleccionadas, gráficos de dispersión para cada una de ellas y un gráfico de barras que expresa como se comporta cada variable con respecto a ella misma.
+
+#### Afganistán
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+afganistan_corr <- data_completa3 %>% 
+  select(-año) %>% 
+  filter(Pais %in% "Afganistan") %>%
+  select(-Pais)
+```
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+ggpairs(afganistan_corr, lower = list(continuous = "smooth"),
+        diag = list(continuous = "barDiag"), axisLabels = "none", 
+        cardinality_threshold = 18)
+
+```
+
+Evaluando la correlación entre las variables dependientes y las independientes, en primer lugar se evidencia que la correlación entre gasto en salud y esperanza de vida es de 0.986, indicando que existe una relación positiva y, además, una alta relación entre las variables. Sin embargo, esto más allá de representar una alta relación expresa que puede que en la regresión se presenten problemas de autocorrelación donde, en vez de existir una relación per se, lo que ocurre es que hay tendencias similares a medida que pasa el tiempo y los valores se ven influenciados por sus rezagos, apreciandose de mejor manera en el gráfico de dispersión donde los puntos se comportan casi igual que la línea de tendencia. En segundo lugar, para el caso de mortalidad infantil vs gasto en salud ocurre lo mismo, debido a que la correlación es negativa pero es muy alta, con un valor de -0.994, ocurriendo lo mismo en el gráfico de dispersión que ocurria en la comparación entre el gasto en salud y la esperanza de vida. No obstante, si evaluamos la correlación entre la mortalidad infantil y las camas de hospital, la correlación es moderada, con un valor de -0.756, indicando que la relación es inversa y que esta variable podría explicar en buena medida a la mortalidad infantil sin que haya autocorrelación. Igualmente, con la esperanza de vida vs las camas de hospital ocurre algo similar, la correlación es de 0.791 la cual indica una relación directa y que podría explicar en buena medida a la variable.
+
+#### Argentina
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+argentina_corr <- data_completa3 %>% 
+  select(-año) %>% 
+  filter(Pais %in% "Argentina") %>%
+  select(-Pais)
+```
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+ggpairs(argentina_corr, lower = list(continuous = "smooth"),
+        diag = list(continuous = "barDiag"), axisLabels = "none", 
+        cardinality_threshold = 18)
+
+```
+
+En el caso de Argentina es un poco distinto. Partiendo de la relación entre gasto en salud y esperanza de vida, la correlación es de 0.858, indicando que existe una positiva y, además, una moderada relación entre las variables. Sin embargo, todavía puede expresar que más adelante en la regresión se presenten problemas de autocorrelación, debido a que en el gráfico de dispersión los puntos todavia se acercan mucho a la línea de tendencia. Posteriormente, para el caso de mortalidad infantil vs gasto en salud ocurre algo similar, donde la correlación es negativa y moderada con un valor de -0.85 pero ocurre como en el caso anterior, que los puntos en el gráfico se acercan mucho a la línea de tendencia, por lo que podrían haber problemas de autocorrelación. A su vez, si evaluamos la correlación entre la mortalidad infantil y las camas de hospital, la correlación es moderada pero un poco alta, con un valor de -0.883, indicando que la relación es inversa y que esta variable podría explicar en buena medida a la mortalidad infantil pero con la posible presencia de autocorrelación. No obstante, en la comparación la esperanza de vida vs las camas de hospital ocurre algo un poco distinto, la correlación es de 0.799 la cual indica una relación directa y que podría explicar en buena medida a la variable sin que haya autocorrelación.
+
+#### Estados Unidos
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+ggpairs(afganistan_corr, lower = list(continuous = "smooth"),
+        diag = list(continuous = "barDiag"), axisLabels = "none", 
+        cardinality_threshold = 18)
+
+```
+
+Analizando el caso de Estados Unidos es particular con respecto a los dos anteriores, debido a que las correlaciones explican de manera acertada las relaciones entre variables, por ejemplo, para el caso de esperanza de vida vs gasto en salud es positiva, a mayor gasto en salud, mayor es la esperanza de vida del país. Sin embargo, la relación entre mortalidad infantil y camas de hospital no se cumple para este caso, debido a que muestra una relación positiva entre las variables, sin embargo, bien es conocido que mayor cantidad de camas de hospital no representa una mayor tasa de mortalidad infantil, por lo que esta variable no sirve para explicar a la mortalidad infantil en Estados Unidos. No obstante, la relación entre camas de hospital e indice de desarrollo humano si es positiva, por lo que se podría utilizar para explicar el indice de desarrollo humano en Estados Unidos. A pesar de ello, es importante tener en consideración que todas las correlaciones son altas, como se muestra en los gráficos de dispersión, los puntos estan muy pegados a la línea de tendencia, por lo que podría haber autocorrelación.
+
+En conclusión, para cada país los comportamientos de las variables son distintas, con diferentes relaciones y valores de las correlaciones, por lo que la condición de cada país si puede influir en cómo se comportan las variables y, por ende, en los resultados de las regresiones.
+
+### Gráfico por variable
+
+Con el objetivo de explicar el comportamiento de cada una de las variables, se van a tomar los 3 países seleccionados anteriormente (Afganistán, Argentina y Estados Unidos).
+
+#### Esperanza de vida
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+data_completa3 %>%
+  ggplot(aes(x = año , y = `Esperanza de Vida`  , colours = Pais))+
+  geom_point(aes(colour = Pais))+
+  geom_line(aes(colour = Pais))+
+  labs(
+    title = "Esperanza de Vida a través de los años",
+    y = "Esperanza de Vida",
+    x = "Año")+
+  theme_economist()+
+  theme_minimal(base_size = 14, base_family = "Georgia")+
+  transition_reveal(año)
+```
+
+En el caso de Afganistán, debido a ser un país que se encuentra en una situación crítica, se puede observar que su esperanza de vida es notablemente menor a la del resto de los países de la muestra. En cuanto a Argentina, su esperanza de vida promedio oscila entre 73 y 76 años, lo que indica una mayor calidad de vida dentro del país en comparación a la de Afganistán. Con respecto a Estados Unidos, su esperanza de vida es la segunda más alta dentro de la muestra elaborada, esto puede estar relacionado con el hecho de que es la economía más grande del mundo. Este punto se desarrollará más adelante.
+
+#### Mortalidad Infantil
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+data_completa3 %>%
+  ggplot(aes(x = año , y = `Mortalidad Infantil`  , colours = Pais))+
+  geom_point(aes(colour = Pais))+
+  geom_line(aes(colour = Pais))+
+  labs(
+    title = "Mortalidad Infantil a través de los años",
+    y = "Mortalidad Infantil",
+    x = "Año")+
+  theme_economist()+
+  theme_minimal(base_size = 14, base_family = "Georgia")+
+  transition_reveal(año)
+```
+
+Afghanistan muestra una alta tasa de mortalidad infantil con tendencia bajista a lo largo del tiempo. Argentina es el segundo país con la tasa de mortalidad infantil más elevada en el grupo de los países subdesarrollados, la cual va disminuyendo a través de los años. Estados Unidos muestra poca variación en el comportamiento de la variable, en el gráfico se puede observar que, de los países desarrollados, es el tercero con mayor mortalidad infantil.
+
+#### Gasto en Salud per cápita
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+data_completa3 %>%
+  ggplot(aes(x = año , y = `Gasto en Salud`  , colours = Pais))+
+  geom_point(aes(colour = Pais))+
+  geom_line(aes(colour =  Pais))+
+  labs(
+    title = " Gasto en Salud a través de los años ",
+    y = " Gasto en Salud",
+    x = "Año")+
+  theme_economist()+
+  theme_minimal(base_size = 14, base_family = "Georgia")+
+  transition_reveal(año)
+```
+
+Analizando el comportamiento de la variable en Afganistán, se puede ver como el destino del ingreso per cápita hacia la salud es mínimo, por lo tanto en el gráfico la línea que indica su comportamiento prácticamente no se aleja del eje x, esto indica que su gasto en salud per cápita es cercano a 0, el mismo oscila entre 12/\$ y 65/\$. Evaluando el caso de Argentina, es el país, dentro del grupo de los subdesarrollados, que destina una mayor parte de su ingreso hacia la salud y presenta una tendencia alcista a lo largo de los años. Visualizando el comportamiento de Estados Unidos, es el país dentro de la muestra elaborada que evidencia el mayor gasto en salud per cápita.
+
+#### Camas de Hospital
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+data_completa3 %>%
+  ggplot(aes(x = año , y = `Camas de Hospital`  , colours = Pais))+
+  geom_point(aes(colour = Pais))+
+  geom_line(aes(colour =  Pais))+
+  labs(
+    title = "Camas de Hospital a través de los años ",
+    y = " Camas de Hospital",
+    x = "Año")+
+  theme_economist()+
+  theme_minimal(base_size = 14, base_family = "Georgia")+
+  transition_reveal(año)
+```
+
+En el caso de Afganistán, la variable no tiende a cambiar mucho de comportamiento al pasar de los años. Con respecto a Argentina, se visualiza un incremento de las camas de hospital con el pasar de los años. Y en cuanto a Estados Unidos, ocurre lo contrario, el número de camas tiende a disminuir a lo largo del tiempo.
+
+#### PIB per cápita
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+data_completa3 %>%
+  ggplot(aes(x = año , y = `PIB per capita`  , colours = Pais))+
+  geom_point(aes(colour = Pais))+
+  geom_line(aes(colour =  Pais))+
+  labs(
+    title = "PIB per capita a través de los años ",
+    y = " PIB per capita ",
+    x = "Año")+
+  theme_economist()+
+  theme_minimal(base_size = 14, base_family = "Georgia")+
+  transition_reveal(año)
+```
+
+Como bien se menciona anteriormente, debido a que Afganistán se encuentra en un momento de crisis tanto humanitaria como económica, su PIB per cápita es el más bajo en comparación a los demás países de la muestra. Argentina presenta un PIB per cápita elevado en comparación a los otros países subdesarrollados tomados en consideración. El PIB per cápita de Estados Unidos demuestra ser el más elevado a lo largo de los años, superando la cifra de lo que indica un buen poder adquisitivo.
+
+### Desarrollo
+
+#### Pregunta 1: ¿Cuánto destina la población de su ingreso a gastos por salud?
+
+Como mencionamos anteriormente, estudios han demostrado que en Estados Unidos la población destina alrededor del 20% de su ingreso a gastos en salud. Sin embargo, también se ha evidenciado que en ciertos casos que no siempre un mayor gasto en salud representa una mejoría en la salud de las personas. Por ende, resulta pertinente evaluar primeramente la proporcion de su ingreso que destina la población de cada país a gastos por salud, y analizar si realmente, los que mantienen una mayor proporción, tienen un gasto en salud representativo que les proporcione una mayor eperanza de vida y una menor tasa de mortalidad infantil.
+
+Para dar respuesta a la pregunta, partimos de la base de datos ya limpia y se calculó la proporción del gasto en salud dentro del ingreso, para posteriormente añadirla a la tabla. Seguidamente, se realizó un gráfico para analizar el comportamiento de la variable en el tiempo para cada país:
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+data_nueva %>%
+  ggplot(aes(x = año , y = `proporcion salud ingreso`, colours = Pais))+
+  geom_point(aes(colour = Pais))+
+  geom_line(aes(colour = Pais))+
+  labs(
+    title = "Proporción salud ingreso a través de los años",
+    y = "Proporción salud ingreso",
+    x = "Año")+
+  theme_economist()+
+  theme_minimal(base_size = 14, base_family = "Georgia")+
+  transition_reveal(año)
+```
+
+Si se analiza el gráfico, se puede apreciar lo distinto de los comportamientos por país con lo que a proporción salud ingreso se refiere. En primer lugar, se observa como Egipto posee una proporción salud ingreso variable, presentando picos en algunos años (uno alto en el 2005 y uno bajo en el 2010) pero manteniendo una proporción baja en comparación al resto de los países. En segundo lugar, tomando el caso de Afganistán y Argentina, se visualiza como el comportamiento de la proporción salud ingreso es bastante volátil con numerosos picos a través de los años, esto puede deberse a los períodos de crisis que han vivido los países en la historia, sin embargo, habrá que evaluar que tan buena será la relación que guarda el gasto en salud en la expectativa de vida realmente. En tercer lugar, para Estados Unidos se evidencia un crecimiento constante a lo largo de los años de esta proporción pero con valores un mucho más altos con respecto al resto de los países, lo cual puede deberse a la consolidación del mismo como país desarrollado que han tenido a lo largo de la historia y cómo esto influye en la porción del ingreso que destinan por salud. Para el caso de Suiza y Reino Unido, dicha proporción es más elevada que en el caso de varios de los países subdesarrollados y con un crecimiento relativamente constante con el pasar de los años. Chile por su parte así como Rusia mantienen una baja proporción salud ingreso con respecto a otros países y, aunque el movimiento constante, los últimos 5 años se puede apreciar un aumento sostenido de la proporción en cuestión.
+
+De esta manera, los países desarrollados tienden a mantener una mayor proporción salud ingreso respecto a los países subdesarrollados, con la excepción de Rusia que cuenta con una baja proporción. Por su parte, los países subdesarrollados tienden a contar con una baja proporción salud ingreso, y los países que llegan a alcanzar una mayor proporción no lo sostienen en el tiempo. Esto puede deberse a que en los países desarrollados las tecnologías médicas son mucho más avanzadas, por lo que los costos de la salud se incrementan, a diferencia de los países subdesarrollados que no suelen contar con esta tecnología.
+
+#### Pregunta 2: ¿El ingreso per cápita es un buen indicador del desarrollo humano?¿Serán mejores indicadores el gasto en salud y la cantidad de camas en hospitales?
+
+```{r, echo=FALSE}
+
+```
+
+##### Indice de Desarrollo Humano vs Camas de Hospital
+
+Para analizar cuál es el mejor indicador del desarrollo humano, se estudió la relación entre el índice y el ingreso per cápita, el gasto en salud per cápita y la camas de hospitales por cada 1000 personas. Para ello se realizó una regresión lineal simple entre el índice y cada una de las variables para Afganistán, Argentina y Estados Unidos.
+
+##### Afganistán
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_afganistan <- data_nueva %>% 
+  filter(Pais == "Afganistan")
+tablanew <- summary(
+  lm(data = reg_afganistan,
+     `Indice de Desarrollo Humano` ~ `Camas de Hospital`))
+```
+
+##### Argentina
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_argentina <- data_nueva %>% 
+  filter(Pais == "Argentina")
+summary(
+  lm(data = reg_argentina,
+     `Indice de Desarrollo Humano` ~ `Camas de Hospital`))
+```
+
+##### Estados Unidos
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_estados_unidos <- data_nueva %>% 
+  filter(Pais == "Estados Unidos")
+summary(
+  lm(data = reg_estados_unidos,
+     `Indice de Desarrollo Humano` ~ `Camas de Hospital`))
+```
+
+##### Gráfico
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+idh_ %>%
+  ggplot(aes(x = `Camas de Hospital` , y = `Indice de Desarrollo Humano`  , colours = Pais))+
+  geom_point(size = 5, aes(colour = Pais))+
+  labs(
+    subtitle = "Índice del desarrollo humano vs Camas de Hospital",
+    y = "Índice del desarrollo humano",
+    x = "Camas de Hospital")+
+  theme_economist()+
+  theme_minimal(base_size = 14, base_family = "Georgia")+
+  guides(color=guide_legend(title="Paises")) +
+  transition_time(as.integer(idh_$año)) +
+  labs(title = "Año: {frame_time}")
+```
+
+En el caso de Afganistán, la relación entre las camas de hospital y el índice de desarrollo humano es positiva con un parámetro de 0,65941, por lo que por cada unidad que aumente el número de camas de hospital, aumentará el indice de desarrollo humano incrementará en 0.65941 unidades. A su vez, se obtiene un coeficiente de determinación de 0.6209, representando que la variable independiente explica de buena manera a la variable dependiente. Por ende, las camas de hospital son un muy buen indicador para explicar el índice de desarrollo humano en Afganistán, lo cual cobra sentido al recordar que es un país que vive una situación crítica, por lo que tiene sentido pensar que cada cama adicional genera mejorías en el desarrollo humano del país.
+
+Para el caso de Argentina, la relación entre las camas de hospital y el índice de desarrollo humano es directa con un parámetro de 0,06249, por lo que por cada unidad que aumente el número de camas de hospital, aumentará el indice de desarrollo humano incrementará pero en menor medida que en Afganistán. Por otro lado, se obtiene un coeficiente de determinación de 0.66, evidenciando que la variable explicativa explica de buena manera a la variable explicada. Por esta razón, las camas de hospital resultan como un posible buen indicador para explicar el índice de desarrollo humano en Argentina.
+
+Sin embargo, el caso de Estados Unidos como país representante del grupo de los desarrollados presenta un comportamiento peculiar, debido a que de entrada el parámetro expresa una relación negativa entre las variables, lo cual no presenta mucha coherencia que a mayor cantidad de camas de hospital haya un menor índice de desarrollo, por lo que esta variable no puede ser considerada para evaluar el desarrollo humano en países como Estados Unidos.
+
+En conclusión, la evidencia demuestra que las camas de hospital no siempre pueden ser un buen indicador, sino que depende de la situación en la que se encuentre cada país, como es el caso de Afganistán que, por sus condiciones, las camas de hospital era un muy buen indicador para explicar el desarrollo humano del país.
+
+##### Indice de Desarrollo Humano vs PIB per capita
+
+##### Afganistán
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_afganistan_1 <- data_nueva %>% 
+  filter(Pais == "Afganistan")
+summary(
+  lm(data = reg_afganistan_1,
+     `Indice de Desarrollo Humano` ~ `PIB per capita`))
+```
+
+##### Argentina
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_argentina_1 <- data_nueva %>% 
+  filter(Pais == "Argentina")
+summary(
+  lm(data = reg_argentina_1,
+     `Indice de Desarrollo Humano` ~ `PIB per capita`))
+```
+
+##### Estados Unidos
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_estados_unidos_1 <- data_nueva %>% 
+  filter(Pais == "Estados Unidos")
+summary(
+  lm(data = reg_estados_unidos_1,
+     `Indice de Desarrollo Humano` ~ `PIB per capita`))
+```
+
+##### Gráfico
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+idh_ %>%
+  ggplot(aes(x = `PIB per capita` , y = `Indice de Desarrollo Humano`  , colours = Pais))+
+  geom_point(size = 5, aes(colour = Pais))+
+  labs(
+    subtitle = "Índice del desarrollo humano vs PIB per cápita",
+    y = "Índice del desarrollo humano",
+    x = "PIB per cápita")+
+  theme_economist()+
+  theme_minimal(base_size = 14, base_family = "Georgia")+
+  guides(color=guide_legend(title="Paises")) +
+  transition_time(as.integer(idh_$año)) +
+  labs(title = "Año: {frame_time}")
+```
+
+Partiendo del caso de Afganistán, el parámetro expresa que la relación entre el PIB per cápita y el índice de desarrollo humano es positiva, donde un cambio en el ingreso per cápita genera un crecimiento en el desarrollo humano del país en 0.000025 unidades. Tomando en consideración el comportamiento de las variables en el gráfico y el coeficiente de determinación de 0.86, se podría concluir que la variable explicativa es un buen indicador para explicar a la variable explicada.
+
+Similar ocurre en el caso de Argentina, sin embargo, al tener un parámetro de 0.000000571, el cambio en el PIB per cápita afecta minimamente en el índice de desarrollo, mas igualmente lo afecta positivamente. Por lo que, al tener un coeficiente de determinación de 0.78, se podría afirmar que, para el caso de Argentina, el PIB per cápita resulta como buen indicador para explicar el desarrollo humano del mismo. Como se admira en el gráfico, en varios años un crecimiento del PIB per cápita se traduce en pequeños movimientos del índice de desarrollo humano.
+
+El caso de Estados Unidos no está muy alejado, con un parámetro de 0.000000148 el índice de desarrollo humano se ve influenciado por los cambios en el ingreso per cápita aunque sea en una muy baja medida. Además, con un coeficiente de determinación de 0.98, las evidencias demuestran que la variable independiente explica en gran medida a la variable dependiente, sin embargo, al ser muy alto el coeficiente, pueden presentarse problemas de multicolinealidad y autocorrelación.
+
+En líneas generales, el PIB per cápita es un buen indicador para explicar al índice de desarrollo humano tanto para países desarrollados como para países subdesarrolados.
+
+##### Indice de Desarrollo Humano vs Proporción Salud Ingreso
+
+##### Afganistán
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_afganistan_2 <- data_nueva %>% 
+  filter(Pais == "Afganistan")
+summary(
+  lm(data = reg_afganistan_2,
+     `Indice de Desarrollo Humano` ~ `proporcion salud ingreso`))
+```
+
+##### Argentina
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_argentina_2 <- data_nueva %>% 
+  filter(Pais == "Argentina")
+summary(
+  lm(data = reg_argentina_2,
+     `Indice de Desarrollo Humano` ~ `proporcion salud ingreso`))
+```
+
+##### Estados Unidos
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_estados_unidos_2 <- data_nueva %>% 
+  filter(Pais == "Estados Unidos")
+summary(
+  lm(data = reg_estados_unidos_2,
+     `Indice de Desarrollo Humano` ~ `proporcion salud ingreso`))
+```
+
+##### Gráfico
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+idh_ %>%
+  ggplot(aes(x = `proporcion salud ingreso` , y = `Indice de Desarrollo Humano`  , colours = Pais))+
+  geom_point(size = 5, aes(colour = Pais))+
+  labs(
+    subtitle = "Índice del desarrollo humano vs Proporcion salud ingreso",
+    y = "Índice del desarrollo humano",
+    x = "Proporcion salud ingreso")+
+  theme_economist()+
+  theme_minimal(base_size = 14, base_family = "Georgia")+
+  guides(color=guide_legend(title="Paises")) +
+  transition_time(as.integer(idh_$año)) +
+  labs(title = "Año: {frame_time}")
+```
+
+Iniciando por Afganistán, si se evalúa el índice de desarrollo humano con respecto a la proporción salud ingreso, el parámetro es de 0.019 lo cual indica que la relación es positiva y coherente, señalizando que por cada unidad que incremente dicha proporción, el índice aumentará en 0.019 unidades. Sin embargo, el coeficiente de determinación es de 0.27, indicando que la variable independiente posee una debíl capacidad de explicar a la variable dependiente. En el gráfico se puede apreciar aunque la proporción salud ingreso aumente o disminuya, el índice de desarrollo humano tiende siempre al alza, por lo que cobra sentido el valor del coeficiente de determinación.
+
+Siguiendo con Argentina, el parámetro demuestra que la relación entre índice de desarrollo humano y la porporción salud ingreso es positiva, con un valor de 0.0135. Sin embargo, ocurre una situación similar a la de Afganistán, donde el coeficiente de determinación (el cual tiene un valor de 0.4) expresa que la variable explicativa no es capaz de explicar en buena medida a la variable explicada. En el gráfico también se puede notar como el movimiento del índice de desarrollo humano tiende a crecer o mantenerse, aunque la proporciín salud ingreso aumente o decrezca.
+
+El caso de Estados Unidos demuestra un comportamiento distinto entre las variables índice de desarrollo humano y proporción salud ingreso. El parámetro posee un valor de 0.0081, por lo que el cambio en una unidad de la proporción ocasiona pequeños cambios en el índice. No obstante, el coeficiente de determinación es de 0.88 por lo que los movimientos de dicha proporción explican en buena medida el comportamiento del índice de desarrollo humano. En el gráfico se observa como el crecimiento de la proproción salud ingreso si se traduce en pequeños cambios positivos en el índice de desarrollo humano en varios años.
+
+La evidencia permite concluir que la proporción salud ingreso, como fue el caso de las camas de hospital, puede resultar un buen indicador para un grupo de países mientras que para otro grupo no resulta tan conveniente. En esta ocasión, para Estados Unidos (del grupo de los desarrolados) fue una buena variable explicativa del índice de desarrollo humano mientras que para Afgánistán y Argentina (del grupo de los subdesarrollados) tuvo una débil capacidad de explicar el índice.
+
+##### Conclusión
+
+Para el caso del estudio del índice de desarrollo humano vs camas de hospital, la evidencia lleva a concluir que las camas de hospital puede ser un buen indicador para países en situaciones particulares como lo es Afganistán, sin embargo, que para paises más avanzados como Estados Unidos no representa un buen indicador para explicar el índice de desarrollo humano, debido a que ya las relaciones entre la variable dependiente e independiente no se cumplen. Mientras que el PIB per cápita resulta mejor indicador para explicar el índice tanto para países subdesarrollados como para país desarrollados. No obstante, la proporción salud ingreso puede resultar un buen indicador para Estados Unidos (del grupo de los desarrolados) del índice de desarrollo humano, mientras que para Afgánistán y Argentina (del grupo de los subdesarrollados) tuvo una débil capacidad de explicar el índice.
+
+Partiendo de estas conclusiones, se consideró investigar más a fondo en el tema. Conociendo que el índice de desarrollo humano está conformado por factores como la esperanza de vida y la tasa de mortalidad infantil, se inició por buscar relacionar estas variables con el gasto en salud per cápita, para evaluar si se obtienen mejores resultados que si se considera la proporción salud ingreso o el PIB per cápita.
+
+#### Pregunta 3: ¿Un mayor gasto en salud representa una mayor esperanza de vida?
+
+La esperanza de vida de cada país se puede explicar por factores ambientales, hábitos personales, educación, entre otros, sin embargo, la salud de las personas es importante considerarla y el gasto que destina la población a este factor para incrementar su esperanza de vida. Es importante considerar que, por las condiciones de cada país, puede que el gasto que destina la población en salud sirva para explicar la esperanza de vida de cada uno de ellos como puede que no, y que existan otros factores que realmente influyan en esta variable. Con el fin de dar respuesta a la pregunta de si la esperanza de vida es explicada por el gasto en salud, se evaluó la relación entre ambas variables mediante una regresión lineal simple y gráficos por grupos de países.
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(error = TRUE)
+```
+
+##### Afganistán
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_afganistan_3 <- data_nueva %>% 
+  filter(Pais == "Afganistan")
+summary(lm(data = reg_afganistan_3,
+     `Esperanza de Vida` ~ `Gasto en Salud`))
+```
+
+##### Argentina
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_Argentina_3 <- data_nueva %>% 
+  filter(Pais == "Argentina")
+summary(
+  lm(data = reg_Argentina_3,
+     `Esperanza de Vida` ~ `Gasto en Salud`))
+```
+
+##### Chile
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_chile_3 <- data_nueva %>% 
+  filter(Pais == "Chile")
+summary(
+  lm(data = reg_chile_3,
+     `Esperanza de Vida` ~ `Gasto en Salud`))
+```
+
+##### Egipto
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_egipto_3 <- data_nueva %>% 
+  filter(Pais == "Egipto")
+summary(
+  lm(data = reg_egipto_3,
+     `Esperanza de Vida` ~ `Gasto en Salud`))
+```
+
+##### Suiza
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_suiza_3 <- data_nueva %>% 
+  filter(Pais == "Suiza")
+summary(
+  lm(data = reg_suiza_3,
+     `Esperanza de Vida` ~ `Gasto en Salud`))
+```
+
+##### Estados Unidos
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_estados_unidos_3 <- data_nueva %>% 
+  filter(Pais == "Estados Unidos")
+summary(
+  lm(data = reg_estados_unidos_3,
+     `Esperanza de Vida` ~ `Gasto en Salud`))
+```
+
+##### Rusia
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_rusia_3 <- data_nueva %>% 
+  filter(Pais == "Rusia")
+summary(
+  lm(data = reg_rusia_3,
+     `Esperanza de Vida` ~ `Gasto en Salud`))
+```
+
+##### Reino Unido
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_reino_unido_3 <- data_nueva %>% 
+  filter(Pais == "Reino Unido")
+summary(
+  lm(data = reg_reino_unido_3,
+     `Esperanza de Vida` ~ `Gasto en Salud`))
+```
+
+##### Gráficos
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+desarrollados %>%  
+    ggplot(aes(x=año))+
+    geom_line(aes(y = `Gasto en Salud` / coeff1), size = 1, color = colorHE) +
+    geom_line(aes(y = `Esperanza de Vida`), size = 1, color = colorLE) +
+    geom_point(aes(y = `Gasto en Salud`/ coeff1),  size = 2, color = colorHE) +
+    geom_point(aes(y = `Esperanza de Vida`),  size = 2, color = colorLE) +
+    
+    scale_x_continuous(name = "Año") +
+    scale_y_continuous(
+      name = "Esperanza de Vida",
+      sec.axis = sec_axis(~.*coeff1, name = "Gasto en salud")
+    )+
+    theme_ipsum()+
+    theme_minimal(base_size = 14, base_family = "Georgia")+
+    
+    theme(
+      axis.title.x = element_text(color = "black" , size = 13),
+      axis.title.y.right = element_text(color = colorHE, size = 13),
+      axis.title.y.left = element_text(color = colorLE , size = 13)
+    )+
+    ggtitle("Esperanza de vida y Gasto en salud",
+            subtitle = "Paises Desarrollados") +
+  facet_wrap(~ Pais, scales = "fixed") +
+  transition_reveal(año)
+```
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+subdesarrollados %>%  
+    ggplot(aes(x=año))+
+    geom_line( aes(y = `Gasto en Salud` / coeff2), size = 1, color = colorHE) +
+    geom_line( aes(y = `Esperanza de Vida`), size = 1, color = colorLE)+
+    geom_point( aes(y = `Gasto en Salud`/ coeff2),  size = 2, color = colorHE)+
+    geom_point( aes(y = `Esperanza de Vida`),  size = 2, color = colorLE)+
+    
+    scale_x_continuous(name = "Año")+
+    scale_y_continuous(
+      name = "Esperanza de Vida",
+      sec.axis = sec_axis(~.*coeff2, name = "Gasto en salud")
+    )+
+    theme_ipsum()+
+    theme_minimal(base_size = 14, base_family = "Georgia")+
+    
+    theme(
+      axis.title.x = element_text(color = "black" , size = 13),
+      axis.title.y.right = element_text(color = colorHE, size = 13),
+      axis.title.y.left = element_text(color = colorLE , size = 13)
+    )+
+    ggtitle("Esperanza de vida y Gasto en salud per capita",
+            subtitle = "Paises Subdesarrollados")+
+    facet_wrap(~ Pais, scales = "fixed")+
+    transition_reveal(año)
+```
+
+##### Conclusiones
+
+Al visualizar el comportamiento de ambas variables en un solo gráfico se puede observar cómo influye la variación del gasto en salud per cápita en la esperanza de vida.
+
+En el caso de Suiza, se ve un incremento pronunciado de ambas variables, por lo que se puede deducir a simple vista que el aumento de la porción del ingreso que va destinada a la salud afecta de manera positiva a la esperanza de vida del país. Sin embargo, cuando se introduce en el análisis el coeficiente de determinación y el parámetro que arroja la regresión, el primero al ser 0.95 muestra indicios de que se pueden estar presentando problemas de autocorrelación o multicolinealidad. El parámetro que arroja la regresión es de 0.000536, lo que indica que cuando el gasto en salud aumenta en 1 unidad, la esperanza de vida aumenta en 0.000536 unidades. Ocurre algo similar cuando se analiza a Estados Unidos y Reino Unido, sus coeficientes de regresión son moderados de 0.86 y 0.72 respectivamente, los parámetro que acompaña a la variable explicativa que arroja la regresión son de 0.000421 y 0.00127, esto indica que por cada aumento en 1 unidad del gasto en salud per cápita, aumenta en 0.000421 unidades la esperanza de vida en Estados Unidos y 0.00127 unidades en Reino Unido. Por último, al evaluar a Rusia, el coeficiente de determinación es de 0.68 (moderado) y el parámetro de 0.0089, es decir, por un aumento en 1 unidad del gasto en salud per cápita ocurre un aumento de 0.0089 unidades de la esperanza de vida. Por ende, en el caso de todos los países desarrollados hay evidencias para concluir que la variable gasto en salud per cápita sirve para explicar la variación de la esperanza de vida.
+
+En Afganistán, el coeficiente de regresión es de 0.97 y el parámetro de 0.13, por lo tanto, cuando el gasto en salud per cápita crece en 1 unidad, la esperanza de vida crece en 0.13 unidades. Como se trata de un país en estado crítico, la sensibilidad de la esperanza de vida al gasto en salud puede ser mayor, lo cual puede indicar un mayor impacto en la variable dependiente. Al tener una situación sanitaria precaria, a diferencia de países como Estados Unidos y Suiza en donde los servicios de salud son mejores, un aumento en el gasto en salud es altamente significativo. Al evaluar Argentina y Chile, los coeficientes de determinación son de 0.73 y 0.92, y los parámetros son de 0.00185 y 0.00292 respectivamente, lo que significa que por cada incremento en el gasto en salud per cápita de 1 unidad, aumenta en 0.00185 unidades la esperanza de vida en Argentina, y 0.00292 unidades en Chile . Para finalizar el análisis, Egipto manifiesta un coeficiente de determinación de 0.69 (moderado) y un parámetro de 0.019, es decir, por cada aumento de 1 unidad del gasto en salud per cápita, hay un aumento en 0.019 unidades de la esperanza de vida. Existen evidencias para concluir que, en el caso de todos los países subdesarrollados estudiados en este modelo, la variable explicativa si influye en el comportamiento de la dependiente. Cabe destacar que la esperanza de vida también depende de otros factores aparte del gasto en salud per cápita y la ubicación geográfica, entre dichos factores se encuentran la educación (escolaridad de la persona), el acceso a la salud y el número de médicos. Por ende, para responder la pregunta, un mayor gasto en salud si impacta en la mejora de la esperanza de vida, más no es la única variable que influye en su variación.
+
+#### Pregunta 4: ¿Un mayor gasto en salud representa una menor tasa de mortalidad infantil?
+
+La mortalidad infantil, más allá de depender de la salud de la madre y del cuidado que tenga durante el embarazo, también depende de los médicos y las clínicas de buena calidad a las que dichas madres acceden para atender a sus hijos en sus primeros meses u años de vida. Estudios afirman que los países subdesarrollados suelen carecer de servicios sanitarios públicos de buena calidad, por lo que deben costearlo ellos mismos, a diferencia de lo que suele ocurrir en los países desarrollados, sin embargo, depende en gran medida de las condiciones de cada país. Por ende, surge la duda de si realmente un mayor gasto por parte de la población representa una mejoría en la tasa de mortalidad infantil o si es explicada por factores externos al modelo. Para darle respuesta a la interrogante, se evaluó la relación entre ambas variables mediante una regresión lineal simple y gráficos por grupos de países.
+
+##### Afganistán
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_afganistan_4 <- data_nueva %>% 
+  filter(Pais == "Afganistan")
+summary(
+  lm(data = reg_afganistan_4,
+     `Mortalidad Infantil` ~ `Gasto en Salud`))
+```
+
+##### Argentina
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_Argentina_4 <- data_nueva  %>% 
+  filter(Pais == "Argentina")
+summary(
+  lm(data = reg_Argentina_4,
+     `Mortalidad Infantil` ~ `Gasto en Salud`))
+```
+
+##### Chile
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_chile_4 <- data_nueva  %>% 
+  filter(Pais == "Chile")
+summary(
+  lm(data = reg_chile_4,
+     `Mortalidad Infantil` ~ `Gasto en Salud`))
+```
+
+##### Egipto
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_egipto_4 <- data_nueva  %>% 
+  filter(Pais == "Egipto")
+summary(
+  lm(data = reg_egipto_4,
+     `Mortalidad Infantil` ~ `Gasto en Salud`))
+```
+
+##### Suiza
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_suiza_4 <- data_nueva %>% 
+  filter(Pais == "Suiza")
+summary(
+  lm(data = reg_suiza_4,
+     `Mortalidad Infantil` ~ `Gasto en Salud`))
+```
+
+##### Estados Unidos
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_estados_unidos_4 <- data_nueva %>% 
+  filter(Pais == "Estados Unidos")
+summary(
+  lm(data = reg_estados_unidos_4,
+     `Mortalidad Infantil` ~ `Gasto en Salud`))
+```
+
+##### Rusia
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_rusia_4 <- data_nueva %>% 
+  filter(Pais == "Rusia")
+summary(
+  lm(data = reg_rusia_4,
+     `Mortalidad Infantil` ~ `Gasto en Salud`))
+```
+
+##### Reino Unido
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+reg_reino_unido_4 <- data_nueva %>% 
+  filter(Pais == "Reino Unido")
+summary(
+  lm(data = reg_reino_unido_4,
+     `Mortalidad Infantil` ~ `Gasto en Salud`))
+```
+
+##### Gráficos
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+desarrollados %>%  
+  ggplot(aes(x=año))+
+  geom_line( aes(y = `Gasto en Salud` / coeff3), size = 1, color = colorHE) +
+  geom_line( aes(y = `Mortalidad Infantil`), size = 1, color = colorM)+
+  geom_point( aes(y = `Gasto en Salud`/ coeff3),  size = 2, color = colorHE)+
+  geom_point( aes(y = `Mortalidad Infantil`),  size = 2, color = colorM)+
+  
+  scale_x_continuous(name = "Año")+
+  scale_y_continuous(
+    name = "Mortalidad Infantil",
+    sec.axis = sec_axis(~.*coeff3, name = "Gasto en salud")
+  )+
+  theme_ipsum()+
+  theme_minimal(base_size = 14, base_family = "Georgia")+
+  
+  theme(
+    axis.title.x = element_text(color = "black" , size = 13),
+    axis.title.y.right = element_text(color = colorHE, size = 13),
+    axis.title.y.left = element_text(color = colorM, size = 13)
+  )+
+  ggtitle("Mortalidad Infantil y Gasto en salud",
+          subtitle = "Paises Desarrollados")+
+  facet_wrap(~ Pais, scales = "fixed")+
+  transition_reveal(año)
+```
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+subdesarrollados %>%  
+  ggplot(aes(x=año))+
+  geom_line( aes(y = `Gasto en Salud` / coeff4), size = 1, color = colorHE) +
+  geom_line( aes(y = `Mortalidad Infantil`), size = 1, color = colorM)+
+  geom_point( aes(y = `Gasto en Salud` / coeff4),  size = 2, color = colorHE)+
+  geom_point( aes(y = `Mortalidad Infantil`),  size = 2, color = colorM)+
+  
+  scale_x_continuous(name = "Año")+
+  scale_y_continuous(
+    name = "Mortalidad Infantil",
+    sec.axis = sec_axis(~.*coeff4, name = "Gasto en salud")
+  )+
+  theme_ipsum()+
+  theme_minimal(base_size = 14, base_family = "Georgia")+
+  
+  theme(
+    axis.title.x = element_text(color = "black" , size = 13),
+    axis.title.y.right = element_text(color = colorHE, size = 13),
+    axis.title.y.left = element_text(color = colorM, size = 13)
+  )+
+  ggtitle("Mortalidad Infantil y Gasto en salud per capita",
+          subtitle = "Paises Subdesarrollados")+
+  facet_wrap(~ Pais, scales = "fixed")+
+  transition_reveal(año)
+```
+
+##### Conclusiones
+
+En el caso de Suiza y de Estados Unidos, sus coeficientes de determinación son de 0.94 y 0.96 respectivamente, lo cual puede indicar problemas de autocorrelación o multicolinealidad en los datos. Los parámetros que resultan de la regresión realizada son -0.000154 y -0.000227, es decir, por cada incremento en 1 unidad del gasto en salud per cápita, disminuye la tasa de mortalidad infantil en 0.000154 unidades en Suiza y en 0.000227 unidades en Estados Unidos En lo que concierne a Rusia y Reino Unido, sus coeficientes de determinación son de 0.73 y 0.62 respectivamente. Esto indica que la variable independiente explica a la variabilidad de la variable dependiente de manera moderada. Los parámetros que resultan de la regresión son de -0.01 y -0.00062. Esto quiere decir que por cada aumento de una unidad del gasto en salud per cápita, la mortalidad infantil disminuye en 0.01 unidades en Rusia, y 0.00062 unidades en Reino unido. Existen evidencias para afirmar que el gasto en salud per cápita si explica la variación de la tasa de mortalidad infantil en países desarrollados .
+
+En cuanto a Afganistán, como bien se ha aclarado anteriormente, debido a lo distinta que es su situación con respecto a los demás países, a pesar de presentar un coeficiente de determinación de 0.98, el parámetro de la regresión indica que por cada unidad que aumente el gasto en salud per cápita, disminuye en 0.71 unidades la mortalidad infantil. En el gráfico se puede observar una rápida disminución de la mortalidad infantil acorde al aumento no tan pronunciado del gasto en salud per cápita.. Por lo tanto, existen evidencias para asumir que la variable explicativa influye en el comportamiento de la mortalidad infantil en Afganistán. Con respecto a Argentina, Chile y Egipto, presentan los coeficientes de determinación de 0.72, 0.82 y 0.70 respectivamente. Los parámetros que acompañan a la variable explicativa indican que por cada aumento de una unidad en el gasto de salud per cápita, la mortalidad infantil disminuye 0.0047 en Argentina, 0.0018 en Chile y 0.11 en Egipto. Debido a que los coeficientes de determinación son moderados y que existe lógica económica a la hora de explicar los parámetros, existe evidencia para asumir que el gasto en salud per cápita explica el comportamiento de la variable dependiente en el caso de Argentina, Chile y Egipto. Es importante mencionar que a pesar de que exista evidencia que indica que la variable explicativa si influye en el comportamiento de la mortalidad infantil, no explica la variación de la misma en su totalidad, existen otros factores no considerados dentro del trabajo como la educación, ingresos, ocupación, conductas de salud, tabaco y alcohol que también toman un rol a la hora de explicar el comportamiento de la mortalidad infantil. Por lo tanto, para responder la pregunta, un mayor gasto en salud no es la única razón por la cual puede haber una menor tasa de mortalidad infantil, pero sí influye en la variación de la misma.
+
+#### Pregunta 5: ¿La accesibilidad y la calidad del servicio sanitario es un mejor indicador para explicar la esperanza de vida de un país que el gasto per cápita en este servicio?
+
+En caso de no ser el gasto en salud la mejor variable explicativa para la esperanza de vida y la tasa de mortalidad, habría que evaluar entonces si, más allá del gasto, la calidad y la accesibilidad de los servicios sanitarios explica en mejor medida a las variables antes mencionadas. Para ello, se evaluó por país el comportamiento de cada una con respecto al HAQ, que como su siglas lo indican es el Healthcare Acces and Quality Index. Como la data que proporciona este índice es cada 5 años y, además se parte desde el 2000 para poder compararlo con las otras variables, no hay suficiente data para realizar una regresión lineal simple, por lo que se evaluó el comportamiento mediante gráficos.
+
+##### Gráficos
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+data_nueva3 %>%
+  ggplot(aes(x = `HAQ_index`, y = `Esperanza de Vida`, color = Pais,
+             scale_x_continuous(limits = c(20,90)))) +
+  geom_point(size = 5)+
+  
+  labs(
+    title = "Esperanza de vida vs Indice de acceso y calidad",
+    subtitle = "Esperanza de vida vs Indice de acceso y calidad",
+    y = "Esperanza de vida (años de vida)",
+    x = "HAQ",
+  ) +
+  theme_economist()+
+  theme_minimal(base_size = 14, base_family = "Georgia") +
+  guides(color=guide_legend(title="Paises"))  +
+  transition_time(as.integer(data_nueva3$Año)) +
+  labs(title = "Año: {frame_time}")
+```
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+data_nueva3 %>%
+  ggplot(aes(x = `HAQ_index`, y = `Mortalidad Infantil`, color = Pais,
+             scale_x_continuous(limits = c(20,90)))) +
+  geom_point(size = 5)+
+  
+  labs(
+    title = "Mortalidad Infantil vs Indice de acceso y calidad",
+    subtitle = "Mortalidad Infantil vs Indice de acceso y calidad",
+    y = "Mortalidad Infantil",
+    x = "HAQ",
+  ) +
+  theme_economist()+
+  theme_minimal(base_size = 14, base_family = "Georgia") +
+  guides(color=guide_legend(title="Paises"))  +
+  transition_time(as.integer(data_nueva3$Año)) +
+  labs(title = "Año: {frame_time}")
+```
+
+##### Conclusiones
+
+En primera instancia, se puede observar como en Afganistán con un pequeño incremento en el HAQ, la esperanza de vida crece pronunciadamente, representando una posible relación entre las variables, a pesar de encontrarse muy por debajo del resto de los paises, tanto desarrollados como subdesarrollados. Un país con un comportamiento similar es Rusia, donde para pequeños cambios en el HAQ hay un crecimiento importante en la esperanza de vida pero menor al crecimiento de Afganistán, siendo la esperanza de vida más baja dentro de los desarrollados. Para Egipto, cambios en el HAQ representa pequeños cambios en la esperanza de vida, menores que los dos paises mencionados anteriormente. Mientras que el resto de los paises (Argentina,Chile, Estados Unidos, Reino Unido y Suiza) existe un crecimiento leve pero sostenido a traves de los años de la esperanza de vida cuando crece el HAQ en una medida similar.
+
+En el caso de la mortalidad infantil en función del HAQ, se puede apreciar un comportamiento más o menos similar entre las variables. Para el caso de Afganistán, que es el país con la tasa de mortalidad infantil más alta, un leve crecimiento del HAQ se traduce en una disminución pronunciada de la mortalidad infantil. A su vez, para Egipto también un incremento del HAQ representa una disminución en la mortalidad infantil pero en menor medida que en el caso de Afganistán. Retomando el ejemplo de Rusia, el comportamiento de la mortalidad infantil vs HAQ es menos representativo que en el caso de la esperanza de vida vs HAQ, ahora el movimiento es menos pronunciado que en el caso anterior (mayor HAQ representa una caída en la mortalidad infantil pero en menor medida que en Afganistán y Egipto). Mientras tanto, en el caso de Chile y Argentina, los aumentos del HAQ se traducen en disminuciones casi proporcionales en la mortalidad infantil. Para el caso de Suiza, Reino Unido y Estados Unidos, el aumento del HAQ si representa menores niveles de mortalidad infantil pero menores que en todos los casos anteriores, casi imperceptible entre un año y otro.
+
+En conclusión, cuando se analiza la esperanza de vida en función del HAQ, en el caso de los subdesarrollados, mientras que Afganistán y Egipto muestran incrementos importantes en la esperanza de vida cuando crece el HAQ, Chile y Argentina mantienen un crecimiento pero menor que en los dos países anteriores, por lo que puede haber una relación pero menor que en el caso de Afganistán y Egipto. Similar ocurre con los desarrollados, Rusia muestra un incremento pronunciado en la esperanza de vida cuando crece el HAQ mientras que Estados Unidos, Reino Unido y Suiza sostienen un crecimiento leve de la esperanza de vida cuando sube el HAQ. Por ende, las evidencias reflejan que el HAQ puede relacionarse en gran medida con la esperanza de vida dependiendo del país, debido a que no todos los paises mantienen el mismo comportamiento.
+
+Por otro lado, evaluando la mortalidad infantil con respecto al HAQ, los comportamientos se pueden explicar un poco mejor por grupos. En los paises subdesarrollados se aprecia que, en líneas generales, los cambios al alza del HAQ representan una disminución más pronunciada en la mortalidad infantil. Aunque en este caso se encuentra Afganistán en el grupo con el descenso más marcado, el resto de los paises también disminuyen en buena medida en comparación con los paises desarrollados, donde los cambios en el HAQ representa cambios mínimos en la mortalidad infantil en todos los casos. Por ende, las evidencias exponen que el HAQ puede ser un buen indicador para explicar la mortalidad infantil en los paises subdesarrollados mientras que en los paises desarrollados puede que no guarde mayor relación, sino que la mortalidad infantil se ve explicada por otros factores no considerados en el trabajo.
+
+#### Conclusión
+
+Las interrogantes se fueron respondiendo a lo largo de la investigación. Con respecto a lo destinado del ingreso a la salud, los países desarrollados tienden a mantener una mayor proporción salud ingreso respecto a los países subdesarrollados, con la excepción de Rusia que cuenta con una baja proporción. Los países subdesarrollados que llegan a alcanzar una mayor proporción salud-ingreso no la logran sostener a largo plazo, esto puede deberse a que en los países desarrollados las tecnologías médicas son mucho más avanzadas, a diferencia de los países subdesarrollados que no suelen contar con esta tecnología
+
+En lo que concierne a la segunda interrogante, cuál variable representa un mejor indicador del desarrollo humano entre las camas de hospital, la proporción salud-ingreso y el PIB per cápita. En el caso de países subdesarrollados como Afganistán, las camas de hospital son un buen indicador del desarrollo humano, sin embargo en países desarrollados no existen evidencias que demuestren ser un buen indicador debido a que las relaciones entre la variable dependiente e independiente carecen de lógica. La proporción salud ingreso resultó ser un buen indicador del índice de desarrollo humano para Estados Unidos, pero para Afganistán y Argentina tuvo una débil capacidad de explicar el índice. Posteriormente, las pruebas realizadas demostraron que el PIB per cápita es el mejor indicador para explicar el índice tanto para países subdesarrollados como para países desarrollados.
+
+La tercera interrogante busca responder si un mayor gasto en salud indica una mayor esperanza de vida. Gráficamente, en los países desarrollados no se visualiza un incremento tan alto en la expectativa de vida. Sin embargo, al analizar las regresiones, los parámetros que acompañan al gasto en salud per cápita señalan que sí existe un incremento de la esperanza de vida cuando aumenta el gasto en cada uno de los países desarrollados. Al evaluar a los países subdesarrollados, es más fácil de observar gráficamente el incremento de la línea que representa el comportamiento de la esperanza de vida a través de los años. En Afganistán, debido a que sus condiciones de salud son más precarias, se ve con bastante claridad en el gráfico cómo al incrementar el gasto en salúd per cápita aumenta sostenidamente la esperanza de vida. Se puede concluir que en ambos casos, tanto para países desarrollados como subdesarrollados, un aumento en el gasto en salud per cápita representa un aumento en la esperanza de vida. No obstante, el gasto no es la única variable que incide en la esperanza de vida de un país, también le afectan otros factores como la educación (escolaridad de la persona), el acceso a la salud y el número de médicos.
+
+Con respecto a la cuarta interrogante, los estudios realizados demuestran que la mortalidad infantil se ha reducido considerablemente en los países subdesarrollados que han realizado un incremento en su proporción salud-ingreso, especialmente en aquellos con economía más débiles. En el caso de los países más desarrollados que destinan una mayor porción de su ingreso a la salud, se ha concluido que el gasto en salud per cápita ocasiona una disminución en la tasa de mortalidad infantil pero en menor proporción que en los países subdesarrollados. Sin embargo, en el caso de Rusia, a pesar de que destinan una menor proporción del ingreso per cápita a la salud, la disminución de la tasa de mortalidad infantil es mayor en comparación a los demás países desarrollados. Esto puede explicarse debido a que, si bien existen evidencias las cuales demuestran que un aumento en el gasto en salúd per cápita disminuye la tasa de mortalidad infantil tanto en países desarrollados como subdesarrollados, también existen otros factores que influyen en el comportamiento de la variable dependiente, como por ejemplo, la educación, ingresos, ocupación, conductas de salud, el tabaco y el alcohol.
+
+En cuanto a la quinta interrogante la cual busca examinar si el índice de accesibilidad y la calidad del servicio sanitario es un buen indicador de la esperanza de vida y el índice de mortalidad infantil, las evidencias demuestran que el índice puede relacionarse en gran medida con la esperanza de vida dependiendo del país debido a que no todos los países mantienen el mismo comportamiento. En el caso de los países subdesarrollados con economías muy poco desarrolladas, el HAQ tiene una fuerte relación con la esperanza de vida, sin embargo los países con economías más avanzadas, ya sean países en vías de desarrollo o desarrollados, demuestran tener una menor relación con el índice, exceptuando a Rusia el cual muestra también una fuerte relación. En cuanto a la mortalidad infantil, las evidencias exponen que el índice de la accesibilidad y la calidad del servicio sanitario puede ser un buen indicador para explicar la mortalidad infantil en los países subdesarrollados mientras que en los países desarrollados puede que no guarde mayor relación, sino que la mortalidad infantil se ve afectada por otros factores no considerados en el trabajo.
